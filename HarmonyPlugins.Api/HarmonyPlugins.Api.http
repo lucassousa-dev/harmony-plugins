@@ -1,0 +1,6 @@
+@HarmonyPlugins.Api_HostAddress = http://localhost:5224
+
+GET {{HarmonyPlugins.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
