@@ -1,4 +1,4 @@
 <Solution>
-  <Project Path="HarmonyPlgins.Tests/HarmonyPlgins.Tests.csproj" />
+  <Project Path="HarmonyPlgins.Tests/HarmonyPlugins.Tests.csproj" />
   <Project Path="HarmonyPlugins.Api/HarmonyPlugins.Api.csproj" />
 </Solution>
