@@ -11,5 +11,8 @@ namespace HarmonyPlugins.Api.Domain.Entities
         public UserRole Role { get; set; } = UserRole.Customer;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
+        public ICollection<Order> Orders { get; set; } = new List<Order>();
+        public ICollection<CustomerLibrary> LibraryItems { get; set; } = new List<CustomerLibrary>();
+        public ICollection<DownloadLog> DownloadLogs { get; set; } = new List<DownloadLog>();
     }
 }

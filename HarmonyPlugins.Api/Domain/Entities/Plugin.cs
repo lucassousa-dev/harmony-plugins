@@ -18,5 +18,9 @@ namespace HarmonyPlugins.Api.Domain.Entities
         public PluginCategory? Category { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
+        public ICollection<PluginVersion> Versions { get; set; } = new List<PluginVersion>();
+        public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+        public ICollection<CustomerLibrary> LibraryItems { get; set; } = new List<CustomerLibrary>();
+        public ICollection<DownloadLog> DownloadLogs { get; set; } = new List<DownloadLog>();
     }
 }
