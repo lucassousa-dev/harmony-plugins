@@ -1,3 +1,5 @@
+using HarmonyPlugins.Api.Application.Interfaces;
+using HarmonyPlugins.Api.Application.Services;
 using HarmonyPlugins.Api.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +15,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+builder.Services.AddScoped<IPasswordService, PasswordService>();
 
 var app = builder.Build();
 
