@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HarmonyPlugins.Api.Application.DTOs.Users
+namespace HarmonyPlugins.Api.Application.DTOs.Auth
 {
     public class RegisterUserRequest
     {
