@@ -1,5 +1,4 @@
 ﻿using HarmonyPlugins.Api.Domain.Enums;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace HarmonyPlugins.Api.Domain.Entities
 {
@@ -13,9 +12,12 @@ namespace HarmonyPlugins.Api.Domain.Entities
         public decimal Price { get; set; }
         public PluginType Type { get; set; }
         public PluginStatus Status { get; set; } = PluginStatus.Draft;
+        public string? SuspensionReason { get; set; }
         public string? BannerUrl { get; set; }
         public Guid CategoryId { get; set; }
         public PluginCategory? Category { get; set; }
+        public Guid GameId { get; set; }
+        public Game? Game { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
         public ICollection<PluginVersion> Versions { get; set; } = new List<PluginVersion>();

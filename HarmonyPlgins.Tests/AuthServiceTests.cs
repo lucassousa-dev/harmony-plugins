@@ -84,6 +84,70 @@ namespace HarmonyPlgins.Tests
             Assert.Equal("Email ou senha inválidos.", exception.Message);
         }
 
+        [Fact]
+        public async Task LoginAsync_WithBlockedUser_ThrowsUnauthorizedAccessException()
+        {
+            await using var dbContext = CreateDbContext();
+            var passwordService = new PasswordService();
+            dbContext.Users.Add(new User
+            {
+                Name = "Cliente Bloqueado",
+                Email = "bloqueado@example.com",
+                PasswordHash = passwordService.HashPassword("uma-senha-longa-de-teste"),
+                Status = UserStatus.Blocked
+            });
+            await dbContext.SaveChangesAsync();
+
+            var authService = new AuthService(dbContext, passwordService, new FakeTokenService());
+
+            var exception = await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+                authService.LoginAsync(new LoginRequest
+                {
+                    Email = "bloqueado@example.com",
+                    Password = "uma-senha-longa-de-teste"
+                }));
+
+            Assert.Equal("Sua conta está bloqueada.", exception.Message);
+        }
+
+        [Fact]
+        public async Task RegisterAsync_CreatesActiveCustomerWithHashedPassword()
+        {
+            await using var dbContext = CreateDbContext();
+            var authService = new AuthService(dbContext, new PasswordService(), new FakeTokenService());
+
+            var response = await authService.RegisterAsync(new RegisterUserRequest
+            {
+                Name = "  Novo Cliente  ",
+                Email = "  NOVO@EXAMPLE.COM ",
+                Password = "uma-senha-longa-de-teste"
+            });
+
+            var user = await dbContext.Users.SingleAsync();
+            Assert.Equal(response.Id, user.Id);
+            Assert.Equal("Novo Cliente", user.Name);
+            Assert.Equal("novo@example.com", user.Email);
+            Assert.Equal(UserRole.Customer, user.Role);
+            Assert.Equal(UserStatus.Active, user.Status);
+            Assert.NotEqual("uma-senha-longa-de-teste", user.PasswordHash);
+        }
+
+        [Fact]
+        public async Task RegisterAsync_WithExistingEmail_ThrowsInvalidOperationException()
+        {
+            await using var dbContext = CreateDbContext();
+            var authService = new AuthService(dbContext, new PasswordService(), new FakeTokenService());
+            var request = new RegisterUserRequest
+            {
+                Name = "Cliente",
+                Email = "repetido@example.com",
+                Password = "uma-senha-longa-de-teste"
+            };
+            await authService.RegisterAsync(request);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => authService.RegisterAsync(request));
+        }
+
         private static AppDbContext CreateDbContext()
         {
             var options = new DbContextOptionsBuilder<AppDbContext>()

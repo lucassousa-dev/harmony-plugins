@@ -5,6 +5,7 @@
         Pending = 1,
         Approved = 2,
         Canceled = 3,
-        Refused = 4
+        Refused = 4,
+        Refunded = 5
     }
 }

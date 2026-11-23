@@ -11,7 +11,7 @@ Content-Type: application/json
 {
   "name": "Cliente Exemplo",
   "email": "cliente@example.com",
-  "password": "senha123"
+  "password": "uma-senha-longa-de-teste"
 }
 
 ###
@@ -21,7 +21,7 @@ Content-Type: application/json
 
 {
   "email": "cliente@example.com",
-  "password": "senha123"
+  "password": "uma-senha-longa-de-teste"
 }
 
 ###

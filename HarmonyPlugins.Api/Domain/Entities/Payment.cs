@@ -10,10 +10,13 @@ namespace HarmonyPlugins.Api.Domain.Entities
         public string Gateway { get; set; }
         public string? GatewayPaymentId { get; set; }
         public string? CheckoutUrl { get; set; }
+        public Guid IdempotencyKey { get; set; } = Guid.NewGuid();
         public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
         public decimal Amount { get; set; }
+        public string? Method { get; set; }
         public DateTime? PaidAt { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
+        public ICollection<WebhookEvent> WebhookEvents { get; set; } = new List<WebhookEvent>();
     }
 }

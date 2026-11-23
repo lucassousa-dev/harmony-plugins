@@ -42,7 +42,8 @@ namespace HarmonyPlugins.Api.Application.Services
                 Name = request.Name.Trim(),
                 Email = normalizedEmail,
                 PasswordHash = passwordHash,
-                Role = UserRole.Customer
+                Role = UserRole.Customer,
+                Status = UserStatus.Active
             };
 
             await _appDbContext.Users.AddAsync(user);
@@ -68,6 +69,10 @@ namespace HarmonyPlugins.Api.Application.Services
 
             if (user is null || !_passwordService.VerifyPassword(request.Password, user.PasswordHash))
                 throw new UnauthorizedAccessException("Email ou senha inválidos.");
+
+            // UC02 4a: checado só após a senha, para não revelar o status de contas alheias.
+            if (user.Status == UserStatus.Blocked)
+                throw new UnauthorizedAccessException("Sua conta está bloqueada.");
 
             return new AuthResponse
             {

@@ -14,8 +14,9 @@ namespace HarmonyPlugins.Api.Application.DTOs.Auth
         public string Email { get; set; }
 
         [Required(ErrorMessage = "A senha é obrigatória.")]
-        [MinLength(6, ErrorMessage = "A senha precisa ter no mínimo 6 caracteres.")]
-        [MaxLength(100, ErrorMessage = "A senha pode ter no máximo 100 caracteres.")]
+        // RNF01 (NIST SP 800-63B-4): 15 a 64 caracteres, sem regras de composição.
+        [MinLength(15, ErrorMessage = "A senha precisa ter no mínimo 15 caracteres.")]
+        [MaxLength(64, ErrorMessage = "A senha pode ter no máximo 64 caracteres.")]
         public string Password { get; set; }
     }
 }

@@ -22,6 +22,48 @@ namespace HarmonyPlugins.Api.Infrastructure.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("HarmonyPlugins.Api.Domain.Entities.AuditLog", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Details")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("Resource")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("ResourceId")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AuditLogs");
+                });
+
             modelBuilder.Entity("HarmonyPlugins.Api.Domain.Entities.CustomerLibrary", b =>
                 {
                     b.Property<Guid>("Id")
@@ -40,6 +82,12 @@ namespace HarmonyPlugins.Api.Infrastructure.Data.Migrations
                     b.Property<Guid>("PluginId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -52,7 +100,12 @@ namespace HarmonyPlugins.Api.Infrastructure.Data.Migrations
                     b.HasIndex("UserId", "PluginId")
                         .IsUnique();
 
-                    b.ToTable("CustomerLibraries");
+                    b.ToTable("CustomerLibraries", t =>
+                        {
+                            t.HasCheckConstraint("CK_CustomerLibraries_AccessType", "[AccessType] IN (1, 2, 3)");
+
+                            t.HasCheckConstraint("CK_CustomerLibraries_Status", "[Status] IN (1, 2)");
+                        });
                 });
 
             modelBuilder.Entity("HarmonyPlugins.Api.Domain.Entities.DownloadLog", b =>
@@ -88,6 +141,31 @@ namespace HarmonyPlugins.Api.Infrastructure.Data.Migrations
                     b.ToTable("DownloadLogs");
                 });
 
+            modelBuilder.Entity("HarmonyPlugins.Api.Domain.Entities.Game", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Games");
+                });
+
             modelBuilder.Entity("HarmonyPlugins.Api.Domain.Entities.Order", b =>
                 {
                     b.Property<Guid>("Id")
@@ -113,7 +191,12 @@ namespace HarmonyPlugins.Api.Infrastructure.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", t =>
+                        {
+                            t.HasCheckConstraint("CK_Orders_Status", "[Status] IN (1, 2, 3, 4, 5)");
+
+                            t.HasCheckConstraint("CK_Orders_TotalAmount", "[TotalAmount] > 0");
+                        });
                 });
 
             modelBuilder.Entity("HarmonyPlugins.Api.Domain.Entities.OrderItem", b =>
@@ -136,9 +219,10 @@ namespace HarmonyPlugins.Api.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderId");
-
                     b.HasIndex("PluginId");
+
+                    b.HasIndex("OrderId", "PluginId")
+                        .IsUnique();
 
                     b.ToTable("OrderItems");
                 });
@@ -168,6 +252,13 @@ namespace HarmonyPlugins.Api.Infrastructure.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<Guid>("IdempotencyKey")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Method")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uniqueidentifier");
 
@@ -182,10 +273,20 @@ namespace HarmonyPlugins.Api.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("GatewayPaymentId")
+                        .IsUnique()
+                        .HasFilter("[GatewayPaymentId] IS NOT NULL");
+
+                    b.HasIndex("IdempotencyKey")
+                        .IsUnique();
+
                     b.HasIndex("OrderId")
                         .IsUnique();
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", t =>
+                        {
+                            t.HasCheckConstraint("CK_Payments_Status", "[Status] IN (1, 2, 3, 4, 5)");
+                        });
                 });
 
             modelBuilder.Entity("HarmonyPlugins.Api.Domain.Entities.Plugin", b =>
@@ -208,6 +309,9 @@ namespace HarmonyPlugins.Api.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("GameId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(160)
@@ -229,6 +333,10 @@ namespace HarmonyPlugins.Api.Infrastructure.Data.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<string>("SuspensionReason")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
@@ -239,10 +347,19 @@ namespace HarmonyPlugins.Api.Infrastructure.Data.Migrations
 
                     b.HasIndex("CategoryId");
 
+                    b.HasIndex("GameId");
+
                     b.HasIndex("Slug")
                         .IsUnique();
 
-                    b.ToTable("Plugins");
+                    b.ToTable("Plugins", t =>
+                        {
+                            t.HasCheckConstraint("CK_Plugins_Price", "([Type] = 1 AND [Price] = 0) OR ([Type] = 2 AND [Price] > 0)");
+
+                            t.HasCheckConstraint("CK_Plugins_Status", "[Status] IN (1, 2, 3)");
+
+                            t.HasCheckConstraint("CK_Plugins_Type", "[Type] IN (1, 2)");
+                        });
                 });
 
             modelBuilder.Entity("HarmonyPlugins.Api.Domain.Entities.PluginCategory", b =>
@@ -292,6 +409,11 @@ namespace HarmonyPlugins.Api.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Compatibility")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -299,6 +421,13 @@ namespace HarmonyPlugins.Api.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("FileSha256")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .IsUnicode(false)
+                        .HasColumnType("char(64)")
+                        .IsFixedLength();
 
                     b.Property<long>("FileSize")
                         .HasColumnType("bigint");
@@ -325,9 +454,55 @@ namespace HarmonyPlugins.Api.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PluginId");
+                    b.HasIndex("PluginId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_PluginVersions_PluginId_Current")
+                        .HasFilter("[IsCurrent] = 1");
 
-                    b.ToTable("PluginVersions");
+                    b.HasIndex("PluginId", "VersionNumber")
+                        .IsUnique();
+
+                    b.ToTable("PluginVersions", t =>
+                        {
+                            t.HasCheckConstraint("CK_PluginVersions_FileSize", "[FileSize] > 0 AND [FileSize] <= 104857600");
+
+                            t.HasCheckConstraint("CK_PluginVersions_Status", "[Status] IN (1, 3)");
+                        });
+                });
+
+            modelBuilder.Entity("HarmonyPlugins.Api.Domain.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .IsUnicode(false)
+                        .HasColumnType("char(64)")
+                        .IsFixedLength();
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("HarmonyPlugins.Api.Domain.Entities.User", b =>
@@ -357,6 +532,9 @@ namespace HarmonyPlugins.Api.Infrastructure.Data.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("int");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -365,7 +543,76 @@ namespace HarmonyPlugins.Api.Infrastructure.Data.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", t =>
+                        {
+                            t.HasCheckConstraint("CK_Users_Role", "[Role] IN (1, 2)");
+
+                            t.HasCheckConstraint("CK_Users_Status", "[Status] IN (1, 2)");
+                        });
+                });
+
+            modelBuilder.Entity("HarmonyPlugins.Api.Domain.Entities.WebhookEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Attempts")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("ExternalEventId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Gateway")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("PaymentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ReceivedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ResourceId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Topic")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExternalEventId")
+                        .IsUnique();
+
+                    b.HasIndex("PaymentId");
+
+                    b.ToTable("WebhookEvents");
+                });
+
+            modelBuilder.Entity("HarmonyPlugins.Api.Domain.Entities.AuditLog", b =>
+                {
+                    b.HasOne("HarmonyPlugins.Api.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("HarmonyPlugins.Api.Domain.Entities.CustomerLibrary", b =>
@@ -470,7 +717,15 @@ namespace HarmonyPlugins.Api.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("HarmonyPlugins.Api.Domain.Entities.Game", "Game")
+                        .WithMany("Plugins")
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Category");
+
+                    b.Navigation("Game");
                 });
 
             modelBuilder.Entity("HarmonyPlugins.Api.Domain.Entities.PluginVersion", b =>
@@ -484,11 +739,42 @@ namespace HarmonyPlugins.Api.Infrastructure.Data.Migrations
                     b.Navigation("Plugin");
                 });
 
+            modelBuilder.Entity("HarmonyPlugins.Api.Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("HarmonyPlugins.Api.Domain.Entities.User", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("HarmonyPlugins.Api.Domain.Entities.WebhookEvent", b =>
+                {
+                    b.HasOne("HarmonyPlugins.Api.Domain.Entities.Payment", "Payment")
+                        .WithMany("WebhookEvents")
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Payment");
+                });
+
+            modelBuilder.Entity("HarmonyPlugins.Api.Domain.Entities.Game", b =>
+                {
+                    b.Navigation("Plugins");
+                });
+
             modelBuilder.Entity("HarmonyPlugins.Api.Domain.Entities.Order", b =>
                 {
                     b.Navigation("Items");
 
                     b.Navigation("Payment");
+                });
+
+            modelBuilder.Entity("HarmonyPlugins.Api.Domain.Entities.Payment", b =>
+                {
+                    b.Navigation("WebhookEvents");
                 });
 
             modelBuilder.Entity("HarmonyPlugins.Api.Domain.Entities.Plugin", b =>
@@ -519,6 +805,8 @@ namespace HarmonyPlugins.Api.Infrastructure.Data.Migrations
                     b.Navigation("LibraryItems");
 
                     b.Navigation("Orders");
+
+                    b.Navigation("RefreshTokens");
                 });
 #pragma warning restore 612, 618
         }

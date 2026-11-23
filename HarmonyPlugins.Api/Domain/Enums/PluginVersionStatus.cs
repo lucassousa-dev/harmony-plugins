@@ -3,7 +3,6 @@
     public enum PluginVersionStatus
     {
         Active = 1,
-        Deprecated = 2,
         Inactive = 3
     }
 }

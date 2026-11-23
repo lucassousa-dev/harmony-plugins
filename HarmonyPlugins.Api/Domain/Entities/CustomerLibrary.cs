@@ -12,6 +12,8 @@ namespace HarmonyPlugins.Api.Domain.Entities
         public Guid? OrderId { get; set; }
         public Order? Order { get; set; }
         public LibraryAccessType AccessType { get; set; }
+        public LibraryStatus Status { get; set; } = LibraryStatus.Active;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; }
     }
 }
