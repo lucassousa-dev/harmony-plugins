@@ -53,6 +53,13 @@ builder.Services
 
 var app = builder.Build();
 
+// Ligado no Docker Compose para o ambiente subir com um único comando (RNF10).
+if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
+{
+    using var scope = app.Services.CreateScope();
+    scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

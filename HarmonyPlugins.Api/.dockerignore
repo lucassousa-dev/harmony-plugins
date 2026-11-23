@@ -1,0 +1,5 @@
+bin/
+obj/
+*.http
+# Segredos locais nunca entram na imagem.
+appsettings.Development.json
