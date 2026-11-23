@@ -3,7 +3,9 @@ using HarmonyPlugins.Api.Application.Services;
 using HarmonyPlugins.Api.Application.DTOs.Auth;
 using HarmonyPlugins.Api.Domain.Entities;
 using HarmonyPlugins.Api.Domain.Enums;
+using HarmonyPlugins.Api.Domain.Exceptions;
 using HarmonyPlugins.Api.Infrastructure.Data;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace HarmonyPlgins.Tests
@@ -26,7 +28,7 @@ namespace HarmonyPlgins.Tests
             dbContext.Users.Add(user);
             await dbContext.SaveChangesAsync();
 
-            var authService = new AuthService(dbContext, passwordService, new FakeTokenService());
+            var authService = new AuthService(dbContext, passwordService, new FakeTokenService(), new AuditService(dbContext, new HttpContextAccessor()));
 
             var response = await authService.LoginAsync(new LoginRequest
             {
@@ -44,10 +46,7 @@ namespace HarmonyPlgins.Tests
         public async Task LoginAsync_WithUnknownEmail_ThrowsUnauthorizedAccessException()
         {
             await using var dbContext = CreateDbContext();
-            var authService = new AuthService(
-                dbContext,
-                new PasswordService(),
-                new FakeTokenService());
+            var authService = new AuthService(dbContext, new PasswordService(), new FakeTokenService(), new AuditService(dbContext, new HttpContextAccessor()));
 
             var exception = await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
                 authService.LoginAsync(new LoginRequest
@@ -72,7 +71,7 @@ namespace HarmonyPlgins.Tests
             });
             await dbContext.SaveChangesAsync();
 
-            var authService = new AuthService(dbContext, passwordService, new FakeTokenService());
+            var authService = new AuthService(dbContext, passwordService, new FakeTokenService(), new AuditService(dbContext, new HttpContextAccessor()));
 
             var exception = await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
                 authService.LoginAsync(new LoginRequest
@@ -98,7 +97,7 @@ namespace HarmonyPlgins.Tests
             });
             await dbContext.SaveChangesAsync();
 
-            var authService = new AuthService(dbContext, passwordService, new FakeTokenService());
+            var authService = new AuthService(dbContext, passwordService, new FakeTokenService(), new AuditService(dbContext, new HttpContextAccessor()));
 
             var exception = await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
                 authService.LoginAsync(new LoginRequest
@@ -114,7 +113,7 @@ namespace HarmonyPlgins.Tests
         public async Task RegisterAsync_CreatesActiveCustomerWithHashedPassword()
         {
             await using var dbContext = CreateDbContext();
-            var authService = new AuthService(dbContext, new PasswordService(), new FakeTokenService());
+            var authService = new AuthService(dbContext, new PasswordService(), new FakeTokenService(), new AuditService(dbContext, new HttpContextAccessor()));
 
             var response = await authService.RegisterAsync(new RegisterUserRequest
             {
@@ -133,10 +132,10 @@ namespace HarmonyPlgins.Tests
         }
 
         [Fact]
-        public async Task RegisterAsync_WithExistingEmail_ThrowsInvalidOperationException()
+        public async Task RegisterAsync_WithExistingEmail_ThrowsConflictException()
         {
             await using var dbContext = CreateDbContext();
-            var authService = new AuthService(dbContext, new PasswordService(), new FakeTokenService());
+            var authService = new AuthService(dbContext, new PasswordService(), new FakeTokenService(), new AuditService(dbContext, new HttpContextAccessor()));
             var request = new RegisterUserRequest
             {
                 Name = "Cliente",
@@ -145,7 +144,81 @@ namespace HarmonyPlgins.Tests
             };
             await authService.RegisterAsync(request);
 
-            await Assert.ThrowsAsync<InvalidOperationException>(() => authService.RegisterAsync(request));
+            await Assert.ThrowsAsync<ConflictException>(() => authService.RegisterAsync(request));
+        }
+
+        [Fact]
+        public async Task LoginAsync_StoresOnlyTheHashOfTheRefreshToken()
+        {
+            await using var dbContext = CreateDbContext();
+            var authService = await CreateServiceWithUserAsync(dbContext);
+
+            var response = await authService.LoginAsync(ValidLogin);
+
+            var stored = await dbContext.RefreshTokens.SingleAsync();
+            Assert.NotEqual(response.RefreshToken, stored.TokenHash);
+            Assert.Equal(64, stored.TokenHash.Length);
+            Assert.True(stored.ExpiresAt > DateTime.UtcNow.AddDays(6));
+            Assert.Contains(dbContext.AuditLogs, log => log.Action == "LOGIN");
+        }
+
+        [Fact]
+        public async Task RefreshAsync_RotatesTokenAndRejectsTheOldOne()
+        {
+            await using var dbContext = CreateDbContext();
+            var authService = await CreateServiceWithUserAsync(dbContext);
+            var login = await authService.LoginAsync(ValidLogin);
+
+            var refreshed = await authService.RefreshAsync(login.RefreshToken);
+
+            Assert.NotEqual(login.RefreshToken, refreshed.RefreshToken);
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => authService.RefreshAsync(login.RefreshToken));
+        }
+
+        [Fact]
+        public async Task LogoutAsync_RevokesRefreshToken()
+        {
+            await using var dbContext = CreateDbContext();
+            var authService = await CreateServiceWithUserAsync(dbContext);
+            var login = await authService.LoginAsync(ValidLogin);
+
+            await authService.LogoutAsync(login.RefreshToken);
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => authService.RefreshAsync(login.RefreshToken));
+        }
+
+        [Fact]
+        public async Task RefreshAsync_WithBlockedUser_ThrowsUnauthorizedAccessException()
+        {
+            await using var dbContext = CreateDbContext();
+            var authService = await CreateServiceWithUserAsync(dbContext);
+            var login = await authService.LoginAsync(ValidLogin);
+            (await dbContext.Users.SingleAsync()).Status = UserStatus.Blocked;
+            await dbContext.SaveChangesAsync();
+
+            var exception = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => authService.RefreshAsync(login.RefreshToken));
+
+            Assert.Equal("Sua conta está bloqueada.", exception.Message);
+        }
+
+        private static readonly LoginRequest ValidLogin = new()
+        {
+            Email = "cliente@example.com",
+            Password = "uma-senha-longa-de-teste"
+        };
+
+        private static async Task<AuthService> CreateServiceWithUserAsync(AppDbContext dbContext)
+        {
+            var passwordService = new PasswordService();
+            dbContext.Users.Add(new User
+            {
+                Name = "Cliente Teste",
+                Email = ValidLogin.Email,
+                PasswordHash = passwordService.HashPassword(ValidLogin.Password)
+            });
+            await dbContext.SaveChangesAsync();
+
+            return new AuthService(dbContext, passwordService, new FakeTokenService(), new AuditService(dbContext, new HttpContextAccessor()));
         }
 
         private static AppDbContext CreateDbContext()

@@ -17,7 +17,7 @@ services:
 
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
-    command: azurite-blob --blobHost 0.0.0.0 --loose
+    command: azurite-blob --blobHost 0.0.0.0 --location /data --loose
     ports:
       - "10000:10000"
     volumes:
@@ -33,10 +33,13 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: Server=sqlserver;Database=HarmonyPluginsDb;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;
-      # Conta de desenvolvimento pública do Azurite; usada a partir da Etapa 2 (upload de versões).
+      # Conta de desenvolvimento pública do Azurite (upload das versões).
       ConnectionStrings__BlobStorage: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;
       Jwt__Key: ${JWT_KEY:?Defina JWT_KEY no arquivo .env}
       Database__MigrateOnStartup: "true"
+      # Primeiro administrador (RN16), criado na inicialização se ainda não houver nenhum.
+      Admin__Email: ${ADMIN_EMAIL:-}
+      Admin__Password: ${ADMIN_PASSWORD:-}
     ports:
       - "8080:8080"
 

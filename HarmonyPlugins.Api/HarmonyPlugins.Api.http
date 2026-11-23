@@ -25,3 +25,31 @@ Content-Type: application/json
 }
 
 ###
+
+# Cole aqui o refreshToken devolvido pelo login.
+POST {{HarmonyPlugins.Api_HostAddress}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "cole-o-token-de-renovacao"
+}
+
+###
+
+GET {{HarmonyPlugins.Api_HostAddress}}/api/catalog/plugins?search=loja&type=Paid&maxPrice=50
+Accept: application/json
+
+###
+
+# Rotas de administrador: faça login com a conta criada em Admin:Email e cole o token.
+@adminToken = cole-o-token-do-administrador
+
+POST {{HarmonyPlugins.Api_HostAddress}}/api/admin/games
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Minecraft"
+}
+
+###
