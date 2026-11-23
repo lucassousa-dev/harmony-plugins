@@ -27,5 +27,19 @@ namespace HarmonyPlugins.Api.Controllers
                 return Conflict(new { message = ex.Message });
             }
         }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        {
+            try
+            {
+                var authResponse = await _authService.LoginAsync(request);
+                return Ok(authResponse);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+        }
     }
 }

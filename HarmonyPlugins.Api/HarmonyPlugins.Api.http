@@ -1,6 +1,27 @@
 @HarmonyPlugins.Api_HostAddress = http://localhost:5224
 
-GET {{HarmonyPlugins.Api_HostAddress}}/weatherforecast/
+GET {{HarmonyPlugins.Api_HostAddress}}/api/health
 Accept: application/json
+
+###
+
+POST {{HarmonyPlugins.Api_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Cliente Exemplo",
+  "email": "cliente@example.com",
+  "password": "senha123"
+}
+
+###
+
+POST {{HarmonyPlugins.Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "cliente@example.com",
+  "password": "senha123"
+}
 
 ###

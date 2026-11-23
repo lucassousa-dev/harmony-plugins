@@ -15,11 +15,16 @@ namespace HarmonyPlugins.Api.Application.Services
     {
         private readonly AppDbContext _appDbContext;
         private readonly IPasswordService _passwordService;
+        private readonly ITokenService _tokenService;
 
-        public AuthService(AppDbContext appDbContext, IPasswordService passwordService)
+        public AuthService(
+            AppDbContext appDbContext,
+            IPasswordService passwordService,
+            ITokenService tokenService)
         {
             _appDbContext = appDbContext;
             _passwordService = passwordService;
+            _tokenService = tokenService;
         }
 
         public async Task<UserResponse> RegisterAsync(RegisterUserRequest request)
@@ -51,6 +56,30 @@ namespace HarmonyPlugins.Api.Application.Services
                 Email = user.Email,
                 Role = user.Role.ToString(),
                 CreatedAt = user.CreatedAt
+            };
+        }
+
+        public async Task<AuthResponse> LoginAsync(LoginRequest request)
+        {
+            var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+            var user = await _appDbContext.Users
+                .AsNoTracking()
+                .SingleOrDefaultAsync(u => u.Email == normalizedEmail);
+
+            if (user is null || !_passwordService.VerifyPassword(request.Password, user.PasswordHash))
+                throw new UnauthorizedAccessException("Email ou senha inválidos.");
+
+            return new AuthResponse
+            {
+                Token = _tokenService.GenerateToken(user),
+                User = new UserResponse
+                {
+                    Id = user.Id,
+                    Name = user.Name,
+                    Email = user.Email,
+                    Role = user.Role.ToString(),
+                    CreatedAt = user.CreatedAt
+                }
             };
         }
     }

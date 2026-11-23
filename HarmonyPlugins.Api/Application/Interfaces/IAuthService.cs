@@ -5,6 +5,8 @@ namespace HarmonyPlugins.Api.Application.Interfaces
 {
     public interface IAuthService
     {
-        public Task<UserResponse> RegisterAsync(RegisterUserRequest request);
+        Task<UserResponse> RegisterAsync(RegisterUserRequest request);
+
+        Task<AuthResponse> LoginAsync(LoginRequest request);
     }
 }

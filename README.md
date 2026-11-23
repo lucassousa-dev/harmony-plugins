@@ -272,17 +272,17 @@ Durante o desenvolvimento, estou praticando:
 
 ### Fase 1 — Estrutura inicial da API
 
-- [ ] Planejamento técnico inicial.
-- [ ] Criação da solution e estrutura base.
-- [ ] Configuração do Swagger.
-- [ ] Configuração do Entity Framework Core.
-- [ ] Criação das entidades principais.
-- [ ] Criação da primeira migration.
+- [x] Planejamento técnico inicial.
+- [x] Criação da solution e estrutura base.
+- [x] Configuração do Swagger.
+- [x] Configuração do Entity Framework Core.
+- [x] Criação das entidades principais.
+- [x] Criação da primeira migration.
 
 ### Fase 2 — Autenticação e usuários
 
-- [ ] Cadastro de usuários.
-- [ ] Login com JWT.
+- [x] Cadastro de usuários.
+- [x] Login com JWT.
 - [ ] Controle de acesso por perfil.
 
 ### Fase 3 — Plugins, categorias e versões
@@ -317,6 +317,15 @@ Pré-requisitos esperados:
 - SQL Server instalado.
 - Visual Studio ou VS Code.
 - Git instalado.
+
+Antes de iniciar a API, configure a conexão com o SQL Server e uma chave JWT com pelo menos 32 bytes. Em PowerShell, essas configurações podem ser fornecidas por variáveis de ambiente:
+
+```powershell
+$env:ConnectionStrings__DefaultConnection = "Server=localhost\SQLEXPRESS;Database=HarmonyPluginsDb;Trusted_Connection=True;TrustServerCertificate=True;"
+$env:Jwt__Key = "substitua-por-uma-chave-secreta-com-pelo-menos-32-bytes"
+```
+
+Não versione a chave usada em desenvolvimento ou produção. O arquivo `appsettings.Development.json` está ignorado pelo Git e também pode ser usado para as configurações locais.
 
 Comandos iniciais previstos:
 
