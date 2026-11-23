@@ -1,390 +1,113 @@
 # Harmony Plugins
 
-> Plataforma open-source para comercialização, versionamento e distribuição segura de plugins digitais.
+Loja virtual para venda e distribuição de plugins para jogos, com versionamento dos arquivos e pagamento integrado ao Mercado Pago.
 
-![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
-![C#](https://img.shields.io/badge/C%23-.NET-512BD4)
-![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-Web%20API-5C2D91)
-![SQL Server](https://img.shields.io/badge/SQL%20Server-banco%20relacional-CC2927)
+Projeto desenvolvido por mim (Lucas Sousa) como Trabalho de Graduação do curso de Análise e Desenvolvimento de Sistemas da Fatec Itu.
 
-## Status do projeto
+## Situação
 
-🚧 **Em desenvolvimento — fase inicial do back-end**
+Em desenvolvimento. A pesquisa, os requisitos e a modelagem estão concluídos, e a implementação está no início.
 
-Este repositório está sendo construído gradualmente como parte do meu **Trabalho de Graduação (TG)** em Análise e Desenvolvimento de Sistemas na Fatec Itu.
+Hoje o repositório tem:
 
-O projeto ainda está em desenvolvimento. As funcionalidades descritas neste README representam o **escopo planejado para o MVP** e serão implementadas, testadas e documentadas progressivamente ao longo do desenvolvimento.
+- a API em ASP.NET Core com cadastro e login (JWT);
+- o modelo de dados completo, conforme o dicionário de dados do TG, com as migrations do SQL Server;
+- o ambiente de desenvolvimento em Docker (API, SQL Server e Azurite);
+- testes automatizados da autenticação.
+
+As telas, o catálogo, os pedidos, o pagamento e os downloads ainda não foram implementados.
 
 ## Sobre o projeto
 
-O **Harmony Plugins** é uma plataforma web open-source para venda, distribuição e versionamento de plugins digitais.
+Quem vende plugins costuma juntar várias ferramentas separadas: uma para receber o pagamento, outra para guardar os arquivos e um controle manual de quem comprou o quê. O Harmony Plugins reúne esse fluxo em uma loja própria. O administrador cadastra os plugins e publica as versões. O cliente compra ou obtém plugins gratuitos e baixa, a qualquer momento, todas as versões dos plugins que adquiriu, sem pagar de novo pelas atualizações.
 
-A proposta é criar uma base que permita que administradores cadastrem plugins gratuitos ou pagos, gerenciem versões, pedidos, pagamentos e downloads, enquanto clientes possam visualizar plugins, comprar produtos pagos, baixar plugins gratuitos e acessar uma biblioteca com os plugins adquiridos.
+Fazem parte do escopo:
 
-Além do objetivo acadêmico, o projeto também será usado como meu principal projeto de portfólio em back-end, aplicando conceitos de desenvolvimento de APIs REST, autenticação, banco de dados, regras de negócio e documentação técnica.
+- cadastro e login de clientes e administradores;
+- catálogo com busca e filtros por jogo, categoria, tipo e preço;
+- carrinho, pedidos e pagamento pelo Mercado Pago (Checkout Pro, em ambiente de testes);
+- plugins gratuitos, obtidos sem pedido;
+- biblioteca do cliente com download por URL temporária;
+- área administrativa com plugins, versões, moderação, usuários, vendas, downloads e auditoria.
 
-## Problema que o projeto busca resolver
+Ficam de fora a venda por desenvolvedores externos (marketplace), a emissão de notas fiscais, pagamentos reais em produção, a instalação automática nos jogos e aplicativos móveis.
 
-Desenvolvedores independentes que comercializam plugins digitais geralmente precisam lidar com várias etapas separadas:
+## Tecnologias
 
-- cadastro e organização dos plugins;
-- controle de versões e changelogs;
-- disponibilização de arquivos para download;
-- controle de pagamentos;
-- liberação de acesso após compra;
-- histórico de pedidos e downloads;
-- área para o cliente acessar novamente o que adquiriu.
+| Parte | Tecnologia |
+|---|---|
+| API | C#, .NET 10, ASP.NET Core Web API |
+| Banco de dados | SQL Server com Entity Framework Core 10 |
+| Autenticação | JWT (HMAC-SHA256) e senhas com BCrypt |
+| Arquivos | Azure Blob Storage (Azurite no ambiente local) |
+| Pagamento | Mercado Pago Checkout Pro |
+| Interface web | Angular (ainda não iniciada) |
+| Testes | xUnit |
+| Ambiente | Docker e Docker Compose |
+| Documentação da API | OpenAPI e Swagger UI |
 
-Quando esse processo é feito manualmente ou usando ferramentas desconectadas, a operação pode se tornar difícil de manter, pouco escalável e sujeita a falhas.
-
-O **Harmony Plugins** busca centralizar esse fluxo em uma plataforma própria, com foco inicial em um MVP funcional e bem documentado.
-
-## Objetivo acadêmico
-
-Desenvolver uma plataforma web para comercialização, versionamento e distribuição segura de plugins digitais, contemplando autenticação, controle de acesso, gerenciamento de produtos digitais, pedidos, pagamento em ambiente de testes, biblioteca do cliente e downloads autorizados.
-
-## Objetivo como portfólio
-
-Este projeto tem como objetivo demonstrar evolução prática em desenvolvimento back-end com **C#/.NET**, por meio de um sistema com regras de negócio reais e maior complexidade do que um CRUD simples.
-
-Durante o desenvolvimento, o foco será registrar decisões técnicas, manter commits organizados, documentar a arquitetura e evoluir o projeto de forma incremental.
-
-## Escopo do MVP
-
-O MVP será focado em uma loja própria de plugins, sem marketplace multi-vendedor nesta primeira versão.
-
-### Incluído no MVP
-
-- Autenticação de usuários.
-- Perfis de acesso: cliente e administrador.
-- Cadastro e gerenciamento de plugins digitais.
-- Categorias de plugins.
-- Controle de versões dos plugins.
-- Plugins gratuitos e pagos.
-- Criação de pedidos.
-- Integração com pagamento em ambiente sandbox.
-- Liberação de download após pagamento aprovado.
-- Biblioteca do cliente com plugins adquiridos.
-- Registro de downloads.
-- Painel administrativo básico.
-- Documentação técnica do projeto.
-
-### Fora do MVP inicial
-
-- Marketplace aberto para múltiplos vendedores.
-- Repasse financeiro para terceiros.
-- Sistema de afiliados.
-- Cupons de desconto.
-- Assinaturas recorrentes.
-- Integração direta com servidores de jogo.
-- Sistema avançado de licenças in-game.
-- Antipirataria avançado.
-- Avaliações e comentários públicos.
-
-Esses itens podem ser considerados como evoluções futuras após a entrega da primeira versão funcional.
-
-## Funcionalidades planejadas
-
-### Autenticação e usuários
-
-- Cadastro de usuário.
-- Login.
-- Hash de senha.
-- Autenticação com JWT.
-- Perfil de cliente.
-- Perfil de administrador.
-- Proteção de rotas por perfil.
-
-### Plugins
-
-- Cadastro de plugins.
-- Edição de plugins.
-- Listagem pública de plugins publicados.
-- Busca por nome ou slug.
-- Filtro por categoria.
-- Filtro por tipo: gratuito ou pago.
-- Controle de status: rascunho, publicado ou inativo.
-
-### Categorias
-
-- Cadastro de categorias.
-- Edição de categorias.
-- Listagem de categorias.
-- Desativação de categorias.
-
-### Versões de plugins
-
-- Cadastro de novas versões.
-- Controle de número da versão.
-- Changelog.
-- Arquivo do plugin.
-- Definição de versão atual.
-- Histórico de versões.
-
-### Pedidos e pagamentos
-
-- Criação de pedidos para plugins pagos.
-- Registro dos itens do pedido.
-- Integração com gateway de pagamento em ambiente sandbox.
-- Controle de status de pagamento.
-- Webhook para confirmação de pagamento.
-- Liberação automática do plugin após pagamento aprovado.
-
-### Biblioteca do cliente
-
-- Listagem de plugins comprados.
-- Listagem de plugins gratuitos baixados.
-- Acesso às versões disponíveis.
-- Download de plugins autorizados.
-
-### Downloads
-
-- Download de plugins gratuitos por usuários autenticados.
-- Download de plugins pagos somente após pagamento aprovado.
-- Registro de histórico de downloads.
-- Bloqueio de acesso indevido a arquivos pagos.
-
-### Painel administrativo
-
-- Visualização de usuários.
-- Visualização de pedidos.
-- Visualização de pagamentos.
-- Visualização de downloads.
-- Métricas básicas da plataforma.
-- Plugins mais baixados.
-- Receita aprovada.
-- Pedidos pendentes e aprovados.
-
-## Tecnologias planejadas
-
-### Back-end
-
-- C#
-- ASP.NET Core Web API
-- Entity Framework Core
-- SQL Server
-- JWT
-- Swagger / OpenAPI
-- xUnit para testes automatizados
-- Azure Blob Storage para os arquivos dos plugins (Azurite no ambiente local)
-
-### Front-end
-
-- Angular
-
-### Ferramentas
-
-- Visual Studio
-- SQL Server Management Studio
-- Docker e Docker Compose
-- Git, GitHub e GitHub Actions
-- Postman / Swagger
-- Figma para o protótipo de telas
-- Markdown para documentação
-
-### Pagamento
-
-O pagamento será feito pelo **Mercado Pago, na modalidade Checkout Pro**, em ambiente de testes (sandbox), com notificações por webhook validadas por assinatura HMAC e processadas de forma idempotente.
-
-## Arquitetura planejada
-
-A API será desenvolvida com separação de responsabilidades, evitando concentrar regras de negócio diretamente nos controllers.
-
-Estrutura planejada para o back-end:
+## Estrutura
 
 ```text
-HarmonyPlugins.Api
-│
-├── Controllers
-├── Application
-│   ├── DTOs
-│   ├── Services
-│   └── Interfaces
-├── Domain
-│   ├── Entities
-│   ├── Enums
-│   └── Exceptions
-├── Infrastructure
-│   ├── Data
-│   ├── Repositories
-│   ├── Migrations
-│   └── Integrations
-│       └── Payments
-├── Middlewares
-├── Extensions
+HarmonyPlugins.Api/
+├── Controllers/          endpoints HTTP
+├── Application/          DTOs, interfaces e serviços
+├── Domain/               entidades e enums
+├── Infrastructure/Data/  DbContext e migrations
 └── Program.cs
+HarmonyPlgins.Tests/      testes automatizados
+docker-compose.yml
 ```
 
-Projeto de testes planejado:
+## Endpoints
 
-```text
-HarmonyPlugins.Tests
-```
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/api/health` | Verifica se a API está no ar |
+| POST | `/api/auth/register` | Cadastra um cliente (senha de 15 a 64 caracteres) |
+| POST | `/api/auth/login` | Autentica e devolve o token JWT |
 
-## Principais entidades
+Exemplos de requisição estão em `HarmonyPlugins.Api/HarmonyPlugins.Api.http`.
 
-Já modeladas no banco (migrations `InitialCreate` e `AlinhamentoModeloTG`), conforme o dicionário de dados do TG:
+## Como executar
 
-- User
-- RefreshToken
-- Game
-- PluginCategory
-- Plugin
-- PluginVersion
-- Order
-- OrderItem
-- Payment
-- CustomerLibrary
-- WebhookEvent
-- DownloadLog
-- AuditLog
+### Com Docker
 
-## Exemplos de regras de negócio
-
-- Um cliente só pode baixar um plugin pago se o pagamento estiver aprovado.
-- Um plugin gratuito pode ser baixado por usuários autenticados.
-- Apenas administradores podem cadastrar plugins, versões e categorias.
-- Apenas plugins publicados devem aparecer na listagem pública.
-- Um plugin pago deve ter preço maior que zero.
-- Um plugin gratuito deve ter preço igual a zero.
-- Cada plugin pode possuir várias versões.
-- Apenas uma versão deve ser definida como versão atual.
-- O sistema deve registrar downloads realizados.
-- O cliente só pode visualizar sua própria biblioteca.
-
-## O que estou praticando com este projeto
-
-Este projeto está sendo desenvolvido para consolidar conhecimentos importantes para atuação como desenvolvedor back-end júnior.
-
-Durante o desenvolvimento, estou praticando:
-
-- criação de APIs REST com ASP.NET Core;
-- organização de projetos reais;
-- separação entre controller, service, DTO, entidade e repositório;
-- criação de entidades e relacionamentos;
-- uso do Entity Framework Core;
-- criação e aplicação de migrations;
-- autenticação com JWT;
-- autorização baseada em perfis;
-- tratamento de erros;
-- validações de entrada;
-- integração com serviços externos;
-- testes automatizados;
-- documentação de API;
-- versionamento com Git;
-- escrita de commits mais profissionais;
-- planejamento de features antes da implementação.
-
-## Roadmap
-
-### Fase 1 — Estrutura inicial da API
-
-- [x] Planejamento técnico inicial.
-- [x] Criação da solution e estrutura base.
-- [x] Configuração do Swagger.
-- [x] Configuração do Entity Framework Core.
-- [x] Criação das entidades principais.
-- [x] Criação da primeira migration.
-- [x] Ambiente Docker (API, SQL Server e Azurite).
-- [x] Alinhamento do modelo de dados com a documentação do TG.
-
-### Fase 2 — Autenticação e usuários
-
-- [x] Cadastro de usuários (senha de 15 a 64 caracteres).
-- [x] Login com JWT (recusa contas bloqueadas).
-- [ ] Token de renovação e encerramento de sessão.
-- [ ] Controle de acesso por perfil.
-
-### Fase 3 — Plugins, categorias e versões
-
-- [ ] CRUD de categorias.
-- [ ] CRUD de plugins.
-- [ ] Versionamento de plugins.
-- [ ] Upload de arquivo do plugin.
-- [ ] Definição de versão atual.
-
-### Fase 4 — Pedidos, pagamentos e downloads
-
-- [ ] Criação de pedidos.
-- [ ] Integração com pagamento em sandbox.
-- [ ] Webhook de pagamento.
-- [ ] Biblioteca do cliente.
-- [ ] Download autorizado.
-
-### Fase 5 — Administração, testes e documentação
-
-- [ ] Painel administrativo.
-- [ ] Testes automatizados.
-- [ ] Documentação final da API.
-
-## Como executar o projeto
-
-> Esta seção será atualizada conforme o desenvolvimento avançar.
-
-### Com Docker (recomendado)
-
-Pré-requisito: Docker Desktop em execução.
-
-1. Copie `.env.example` para `.env` e troque a senha do SQL Server e a chave JWT.
-2. Suba o ambiente completo (API, SQL Server e Azurite) com um único comando:
+Com o Docker Desktop aberto, copie `.env.example` para `.env`, troque a senha do SQL Server e a chave JWT, e rode:
 
 ```bash
 docker compose up -d --build
 ```
 
-As migrations são aplicadas automaticamente na inicialização. A API fica em `http://localhost:8080` e o Swagger em `http://localhost:8080/swagger`. Para parar: `docker compose down` (os dados ficam em volumes; use `-v` para apagá-los).
+As migrations são aplicadas na inicialização. A API fica em `http://localhost:8080` e o Swagger em `http://localhost:8080/swagger`.
+
+Para parar o ambiente, use `docker compose down`. Os dados ficam em volumes do Docker; acrescente `-v` para apagá-los.
 
 ### Sem Docker
 
-Pré-requisitos esperados:
-
-- .NET SDK instalado.
-- SQL Server instalado.
-- Visual Studio ou VS Code.
-- Git instalado.
-
-Antes de iniciar a API, configure a conexão com o SQL Server e uma chave JWT com pelo menos 32 bytes. Em PowerShell, essas configurações podem ser fornecidas por variáveis de ambiente:
+É preciso ter o .NET 10 SDK e um SQL Server. Informe a connection string e a chave JWT (pelo menos 32 bytes) por variáveis de ambiente ou em um `appsettings.Development.json`, que não é versionado:
 
 ```powershell
 $env:ConnectionStrings__DefaultConnection = "Server=localhost\SQLEXPRESS;Database=HarmonyPluginsDb;Trusted_Connection=True;TrustServerCertificate=True;"
-$env:Jwt__Key = "substitua-por-uma-chave-secreta-com-pelo-menos-32-bytes"
+$env:Jwt__Key = "troque-por-uma-chave-secreta-com-pelo-menos-32-bytes"
 ```
 
-Não versione a chave usada em desenvolvimento ou produção. O arquivo `appsettings.Development.json` está ignorado pelo Git e também pode ser usado para as configurações locais.
-
-Comandos iniciais previstos:
-
 ```bash
-git clone https://github.com/lucassousa-dev/harmony-plugins.git
-cd harmony-plugins
-dotnet restore
-dotnet build
 dotnet ef database update --project HarmonyPlugins.Api
 dotnet run --project HarmonyPlugins.Api
 ```
 
-Após executar a API, a documentação Swagger fica disponível em `http://localhost:5224/swagger` (perfil http) ou `https://localhost:7110/swagger` (perfil https), apenas no ambiente de desenvolvimento.
+O Swagger fica em `http://localhost:5224/swagger`.
 
-## Documentação
+### Testes
 
-A documentação técnica será mantida na pasta `docs/` conforme o projeto avançar.
-
-Arquivos planejados:
-
-```text
-docs/
-├── requisitos.md
-├── modelagem.md
-├── arquitetura.md
-├── banco-de-dados.md
-├── endpoints.md
-├── pagamentos.md
-├── cronograma.md
-└── decisoes-tecnicas.md
+```bash
+dotnet test
 ```
 
-## Observação
+## Próximos passos
 
-Este projeto está sendo desenvolvido com finalidade acadêmica e profissional.
-
-O README descreve o escopo planejado para o MVP e será atualizado conforme as funcionalidades forem implementadas. A proposta é evoluir o projeto de forma incremental, mantendo o código, a documentação e o histórico de commits alinhados ao desenvolvimento real.
+1. Perfis e autorização, plugins, categorias e jogos, catálogo e publicação de versões com upload.
+2. Carrinho, pedidos, pagamento pelo Mercado Pago, webhooks, aquisições e plugins gratuitos.
+3. Downloads autorizados, biblioteca do cliente, painel administrativo, moderação e auditoria.
+4. Testes, ajustes de segurança e versão de demonstração.
