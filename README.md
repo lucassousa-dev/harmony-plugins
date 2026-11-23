@@ -166,23 +166,25 @@ Esses itens podem ser considerados como evoluções futuras após a entrega da p
 - JWT
 - Swagger / OpenAPI
 - xUnit para testes automatizados
+- Azure Blob Storage para os arquivos dos plugins (Azurite no ambiente local)
+
+### Front-end
+
+- Angular
 
 ### Ferramentas
 
 - Visual Studio
 - SQL Server Management Studio
-- Git e GitHub
+- Docker e Docker Compose
+- Git, GitHub e GitHub Actions
 - Postman / Swagger
+- Figma para o protótipo de telas
 - Markdown para documentação
 
 ### Pagamento
 
-A integração de pagamento será implementada inicialmente em ambiente de testes/sandbox.
-
-Opções consideradas:
-
-- Stripe
-- Mercado Pago
+O pagamento será feito pelo **Mercado Pago, na modalidade Checkout Pro**, em ambiente de testes (sandbox), com notificações por webhook validadas por assinatura HMAC e processadas de forma idempotente.
 
 ## Arquitetura planejada
 
@@ -219,16 +221,21 @@ Projeto de testes planejado:
 HarmonyPlugins.Tests
 ```
 
-## Principais entidades planejadas
+## Principais entidades
+
+Já modeladas no banco (migrations `InitialCreate` e `AlinhamentoModeloTG`), conforme o dicionário de dados do TG:
 
 - User
-- Plugin
+- RefreshToken
+- Game
 - PluginCategory
+- Plugin
 - PluginVersion
 - Order
 - OrderItem
 - Payment
 - CustomerLibrary
+- WebhookEvent
 - DownloadLog
 - AuditLog
 
@@ -278,11 +285,14 @@ Durante o desenvolvimento, estou praticando:
 - [x] Configuração do Entity Framework Core.
 - [x] Criação das entidades principais.
 - [x] Criação da primeira migration.
+- [x] Ambiente Docker (API, SQL Server e Azurite).
+- [x] Alinhamento do modelo de dados com a documentação do TG.
 
 ### Fase 2 — Autenticação e usuários
 
-- [x] Cadastro de usuários.
-- [x] Login com JWT.
+- [x] Cadastro de usuários (senha de 15 a 64 caracteres).
+- [x] Login com JWT (recusa contas bloqueadas).
+- [ ] Token de renovação e encerramento de sessão.
 - [ ] Controle de acesso por perfil.
 
 ### Fase 3 — Plugins, categorias e versões
@@ -311,6 +321,21 @@ Durante o desenvolvimento, estou praticando:
 
 > Esta seção será atualizada conforme o desenvolvimento avançar.
 
+### Com Docker (recomendado)
+
+Pré-requisito: Docker Desktop em execução.
+
+1. Copie `.env.example` para `.env` e troque a senha do SQL Server e a chave JWT.
+2. Suba o ambiente completo (API, SQL Server e Azurite) com um único comando:
+
+```bash
+docker compose up -d --build
+```
+
+As migrations são aplicadas automaticamente na inicialização. A API fica em `http://localhost:8080` e o Swagger em `http://localhost:8080/swagger`. Para parar: `docker compose down` (os dados ficam em volumes; use `-v` para apagá-los).
+
+### Sem Docker
+
 Pré-requisitos esperados:
 
 - .NET SDK instalado.
@@ -334,14 +359,11 @@ git clone https://github.com/lucassousa-dev/harmony-plugins.git
 cd harmony-plugins
 dotnet restore
 dotnet build
+dotnet ef database update --project HarmonyPlugins.Api
 dotnet run --project HarmonyPlugins.Api
 ```
 
-Após executar a API, a documentação Swagger deverá ficar disponível em uma URL local semelhante a:
-
-```text
-https://localhost:porta/swagger
-```
+Após executar a API, a documentação Swagger fica disponível em `http://localhost:5224/swagger` (perfil http) ou `https://localhost:7110/swagger` (perfil https), apenas no ambiente de desenvolvimento.
 
 ## Documentação
 
